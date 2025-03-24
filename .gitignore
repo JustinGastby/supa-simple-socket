@@ -1,0 +1,35 @@
+# 依赖目录
+node_modules/
+
+# 构建输出
+dist/
+*.d.ts
+*.js.map
+
+# 环境文件
+.env
+.env.local
+.env.*.local
+
+# 日志文件
+*.log
+npm-debug.log*
+
+# 编辑器/IDE
+.vscode/
+.idea/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 测试覆盖率
+coverage/
+.nyc_output/
+
+# Lock文件 (根据你的包管理器选择)
+yarn.lock
+pnpm-lock.yaml
+
+# 调试文件
+.debug/ 

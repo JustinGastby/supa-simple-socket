@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SupaSocket 演示</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .container { display: flex; gap: 20px; }
+    .left-panel { flex: 1; }
+    .right-panel { flex: 1; }
+    .message-box { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; margin-bottom: 10px; }
+    .controls { margin-bottom: 20px; }
+    button { padding: 5px 10px; margin-right: 5px; }
+    .status { padding: 5px 10px; border-radius: 4px; display: inline-block; }
+    .connected { background-color: #d4edda; color: #155724; }
+    .disconnected { background-color: #f8d7da; color: #721c24; }
+    .connecting { background-color: #fff3cd; color: #856404; }
+  </style>
+</head>
+<body>
+  <h1>SupaSocket 演示</h1>
+  
+  <div class="controls">
+    <span>连接状态: </span>
+    <span id="status" class="status disconnected">已断开</span>
+    <button id="connectBtn">连接</button>
+    <button id="disconnectBtn">断开</button>
+  </div>
+  
+  <div class="container">
+    <div class="left-panel">
+      <h3>发送消息</h3>
+      <div>
+        <textarea id="messageInput" rows="3" style="width: 100%;" placeholder="输入要发送的JSON消息"></textarea>
+      </div>
+      <button id="sendBtn">发送消息</button>
+    </div>
+    
+    <div class="right-panel">
+      <h3>日志</h3>
+      <div id="logBox" class="message-box"></div>
+      <button id="clearLogBtn">清空日志</button>
+    </div>
+  </div>
+
+  <script type="module">
+    // 注意：在实际使用时，应该引入打包后的模块
+    // import { SupaSocket, ConnectionState } from '../dist/index.js';
+    
+    // 为了演示方便，直接从源文件导入
+    import SupaSocket, { ConnectionState } from '../src/index.js';
+
+    // 在控制台打印所有可用的事件和方法
+    console.log('SupaSocket available:', SupaSocket);
+    
+    let socket = null;
+    
+    // 获取DOM元素
+    const statusEl = document.getElementById('status');
+    const connectBtn = document.getElementById('connectBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const logBox = document.getElementById('logBox');
+    const clearLogBtn = document.getElementById('clearLogBtn');
+    
+    // 添加日志
+    function addLog(message, isError = false) {
+      const logEntry = document.createElement('div');
+      logEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+      if (isError) {
+        logEntry.style.color = 'red';
+      }
+      logBox.appendChild(logEntry);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+    
+    // 更新状态显示
+    function updateStatus(state) {
+      statusEl.className = 'status';
+      switch (state) {
+        case ConnectionState.OPEN:
+          statusEl.textContent = '已连接';
+          statusEl.classList.add('connected');
+          break;
+        case ConnectionState.CONNECTING:
+        case ConnectionState.RECONNECTING:
+          statusEl.textContent = '正在连接...';
+          statusEl.classList.add('connecting');
+          break;
+        case ConnectionState.CLOSING:
+          statusEl.textContent = '正在关闭...';
+          statusEl.classList.add('disconnected');
+          break;
+        case ConnectionState.CLOSED:
+        default:
+          statusEl.textContent = '已断开';
+          statusEl.classList.add('disconnected');
+          break;
+      }
+    }
+    
+    // 连接WebSocket
+    connectBtn.addEventListener('click', () => {
+      if (socket && socket.connectionState !== ConnectionState.CLOSED) {
+        addLog('已经存在连接，请先断开');
+        return;
+      }
+      
+      // 创建新的连接
+      socket = new SupaSocket({
+        url: 'wss://demo.piesocket.com/v3/channel_123?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self',
+        heartbeatInterval: 10000,  // 10秒发送一次心跳
+        heartbeatTimeout: 5000,    // 5秒超时
+        reconnectLimit: 5,        // 最多重连5次
+        reconnectInterval: 3000,  // 3秒重连一次
+        debug: true,               // 开启调试日志
+        autoReconnect: true        // 自动重连
+      });
+      
+      
+      // 注册事件监听
+      socket.on('open', () => {
+        addLog('连接成功');
+        updateStatus(socket.connectionState);
+      });
+      
+      socket.on('message', (data) => {
+        addLog(`收到消息: ${JSON.stringify(data)}`);
+      });
+      
+      socket.on('close', (event) => {
+        addLog(`连接关闭: ${event.code} ${event.reason}`);
+        updateStatus(socket.connectionState);
+      });
+      
+      socket.on('error', (error) => {
+        addLog(`发生错误: ${JSON.stringify(error)}`, true);
+      });
+      
+      socket.on('reconnecting', (data) => {
+        addLog(`正在重连 (${data.attempt}/${data.limit})`);
+        updateStatus(socket.connectionState);
+      });
+      
+      socket.on('reconnectFailed', () => {
+        addLog('重连失败，超过最大重试次数', true);
+      });
+      
+      socket.on('heartbeatTimeout', () => {
+        addLog('心跳超时', true);
+      });
+      
+      addLog('正在连接...');
+      updateStatus(ConnectionState.CONNECTING);
+    });
+    
+    // 断开连接
+    disconnectBtn.addEventListener('click', () => {
+      if (!socket) {
+        addLog('没有活动的连接');
+        return;
+      }
+      
+      socket.close();
+      addLog('手动关闭连接');
+    });
+    
+    // 发送消息
+    sendBtn.addEventListener('click', () => {
+      if (!socket) {
+        addLog('没有活动的连接，请先连接', true);
+        return;
+      }
+      
+      try {
+        const messageText = messageInput.value.trim();
+        if (!messageText) {
+          addLog('消息不能为空', true);
+          return;
+        }
+        
+        // 尝试解析JSON
+        let message;
+        try {
+          message = JSON.parse(messageText);
+        } catch (e) {
+          // 如果不是有效的JSON，就当作普通文本发送
+          message = { text: messageText };
+        }
+        
+        const success = socket.send(message);
+        if (success) {
+          addLog(`已发送: ${JSON.stringify(message)}`);
+          messageInput.value = '';
+        } else {
+          addLog('发送失败', true);
+        }
+      } catch (error) {
+        addLog(`发送时出错: ${error.message}`, true);
+      }
+    });
+    
+    // 清空日志
+    clearLogBtn.addEventListener('click', () => {
+      logBox.innerHTML = '';
+    });
+    
+    // 初始加载时设置状态
+    updateStatus(ConnectionState.CLOSED);
+  </script>
+</body>
+</html>

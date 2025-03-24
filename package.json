@@ -1,0 +1,45 @@
+{
+  "name": "supa-simple-socket",
+  "version": "1.0.0",
+  "description": "一个简单易用的WebSocket客户端工具，支持心跳机制、断点重连和事件订阅",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "format": "prettier --write 'src/**/*.ts'",
+    "lint": "eslint src --ext .ts",
+    "test": "echo \"Error: no test specified\" && exit 0"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "websocket",
+    "socket",
+    "realtime",
+    "heartbeat",
+    "reconnect",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JustinGastby/supa-simple-socket"
+  },
+  "bugs": {
+    "url": "https://github.com/JustinGastby/supa-simple-socket/issues"
+  },
+  "homepage": "https://github.com/JustinGastby/supa-simple-socket#readme",
+  "devDependencies": {
+    "@types/ws": "^8.18.0",
+    "typescript": "^5.8.2",
+    "ws": "^8.18.1",
+    "prettier": "^2.8.0"
+  },
+  "peerDependencies": {
+    "ws": "^8.0.0"
+  }
+}
