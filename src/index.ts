@@ -10,7 +10,7 @@ type EventCallback<T = any> = (data: T) => void;
 type BuiltInEvents = 'open' | 'message' | 'close' | 'error' | 'reconnect' | 'statusChange' | 'connectionTimeout' | 'heartbeatTimeout' | 'reconnectFailed' | 'reconnecting' | string;
 
 // 增强的 SocketMessage 接口，支持泛型
-interface SocketMessage<T = any> {
+export interface SocketMessage<T = any> {
   type: string;
   payload: T; // 使用泛型指定消息的具体数据类型
 }

@@ -6,10 +6,10 @@
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "format": "prettier --write 'src/**/*.ts'",
-    "lint": "eslint src --ext .ts",
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "lint": "eslint src --ext .ts"
   },
   "main": "dist/index.js",
+  "type": "module",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
@@ -23,7 +23,7 @@
     "reconnect",
     "typescript"
   ],
-  "author": "",
+  "author": "JustinGastby",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -36,8 +36,7 @@
   "devDependencies": {
     "@types/ws": "^8.18.0",
     "typescript": "^5.8.2",
-    "ws": "^8.18.1",
-    "prettier": "^2.8.0"
+    "ws": "^8.18.1"
   },
   "peerDependencies": {
     "ws": "^8.0.0"

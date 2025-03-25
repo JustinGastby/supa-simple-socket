@@ -1,0 +1,12 @@
+# 忽略测试目录
+test/
+
+# 忽略 node_modules 目录
+node_modules/
+
+# 其他可能需要忽略的文件或目录
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
